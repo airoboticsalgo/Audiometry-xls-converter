@@ -74,6 +74,9 @@ def get_text_from_any_pdf(pdf_file):
 def getDigitonly(data):
     data=data.strip()
     if data.isnumeric() or data=="" or len(data)==1: 
+        # print("data.isnumeric()= ",data.isnumeric() )
+        if data.isnumeric() !=True:
+            return 0
         return data
     if len(data)==2:
         data1=data[0]
@@ -129,13 +132,14 @@ def createdir(path):
 
 def getpoint(frontname,positionname,orgimage,ouputimagepath,x,y,w,h):
     result=0
-    box=cv2.rectangle(orgimage.copy(), (x, y), (w, h), (0,0,255), 2)
+
+    box=cv2.rectangle(orgimage.copy(), (x, y), (w, h), (255,0,255), 2)
     cv2.imwrite(f"{ouputimagepath}\ {frontname}c_{positionname}.jpg", box)
     cropped_acrimage = orgimage[y:h, x:w]
     result1=convert_image_to_text(cropped_acrimage).strip()
-    # print(f"{frontname}c_{positionname}=",result)
+    # print(f"{frontname}c_{positionname}=",result1)
     result=getDigitonly(result1)
-   
+    # print("result==",result)
     if debug:
         print(f"==={frontname}c_{positionname}?{result1}=",result)
     if result =="":
@@ -237,9 +241,10 @@ def convert4Points(pdffilename,path):
     cv2.imwrite(tcpath, thresholdcropped_image)
     invertcropped_image = cv2.bitwise_not(thresholdcropped_image)
     cv2.imwrite(ipathtest, invertcropped_image)
+    imgrectblack1 = cv2.imread(ipathtest)
     ignvertcropped_image = cv2.bitwise_not(grayimage)
     cv2.imwrite(igpathtest, ignvertcropped_image)
-
+    imgrectblack = cv2.imread(igpathtest)
     idilatecropped_image = cv2.dilate(invertcropped_image, None, iterations=5)
     cv2.imwrite(dpathtest, idilatecropped_image)
     igdilatecropped_image = cv2.dilate(ignvertcropped_image, None, iterations=5)
@@ -278,7 +283,9 @@ def convert4Points(pdffilename,path):
             # print(f"{i}={acrx},{acry},{acrw},{acrh}=",data)
             break
     # acr image rectangle point
-    grayimage = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  
+    # grayimage = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) 
+    grayimage = cv2.cvtColor(imgrectblack, cv2.COLOR_BGR2GRAY)   
+    grayimage1 = cv2.cvtColor(imgrectblack1, cv2.COLOR_BGR2GRAY)   
     acrrectx=acrx
     acrrecty=acry
     acrrectw=acrx + acrw
@@ -293,16 +300,16 @@ def convert4Points(pdffilename,path):
         
     # acrR 250 data
     acrrectx=acrx+190
-    acrrecty=acry
+    acrrecty=acry-5
     acrrectw=acrrectx + acrw-10
-    acrrecth=acry + acrh-18
+    acrrecth=acry + acrh-24
     # box250=cv2.rectangle(grayimage.copy(), (acrrectx, acrrecty), (acrrectw, acrrecth), (0,0,255), 2)
     # cv2.imwrite(f"{acr250path}", box250)
     # cropped_acrimage = grayimage[acrrecty:acrrecth, acrrectx:acrrectw]
     # acr_250=convert_image_to_text(cropped_acrimage).strip()
     # print("acr_250=",acr_250)
     outputpoint[0][0]=getpoint("a","R_250",grayimage.copy(),wpath,acrrectx,acrrecty,acrrectw,acrrecth)
-
+    # print("bcr=",outputpoint[0][0])
     # acrR 500 data
     acrrectx=acrx+235
     acrrecty=acry
@@ -312,11 +319,11 @@ def convert4Points(pdffilename,path):
 
     # acrR 1k data
     acrrectx=acrx+323
-    acrrecty=acry
-    acrrectw=acrrectx + acrw
-    acrrecth=acry + acrh-22
+    acrrecty=acry-1
+    acrrectw=acrrectx + acrw+2
+    acrrecth=acry + acrh-21
     outputpoint[0][2]=getpoint("a","R_1k",grayimage.copy(),wpath,acrrectx,acrrecty,acrrectw,acrrecth)
-
+    # print("bcr1=",outputpoint[0][2])
     # acrR 2k data
     acrrectx=acrx+415
     acrrecty=acry
@@ -327,18 +334,18 @@ def convert4Points(pdffilename,path):
 
     # acrR 4k data
     acrrectx=acrx+505
-    acrrecty=acry
+    acrrecty=acry-5
     acrrectw=acrrectx + acrw
-    acrrecth=acry + acrh-24
+    acrrecth=acry + acrh-24+6
     outputpoint[0][4]=getpoint("a","R_4k",grayimage.copy(),wpath,acrrectx,acrrecty,acrrectw,acrrecth)
-
+    # print("bcr=",outputpoint[0][4])
     # acrR 8k data
     acrrectx=acrx+595
     acrrecty=acry
     acrrectw=acrrectx + acrw
-    acrrecth=acry + acrh-24
+    acrrecth=acry + acrh-24+2
     outputpoint[0][5]=getpoint("a","R_8k",grayimage.copy(),wpath,acrrectx,acrrecty,acrrectw,acrrecth)
-
+    print("bcr=",outputpoint[0][5])
     # acrL 250 data
     acrrectx=acrx+1120
     acrrecty=acry
@@ -364,9 +371,8 @@ def convert4Points(pdffilename,path):
     acrrectx=acrx+1345
     acrrecty=acry
     acrrectw=acrrectx + acrw
-    acrrecth=acry + acrh-24
+    acrrecth=acry + acrh-24+2
     outputpoint[1][3]=getpoint("a","L_2k",grayimage.copy(),wpath,acrrectx,acrrecty,acrrectw,acrrecth)
-
 
     # acrL 4k data
     acrrectx=acrx+1435
@@ -377,10 +383,11 @@ def convert4Points(pdffilename,path):
 
     # acrL 8k data
     acrrectx=acrx+1525
-    acrrecty=acry
+    acrrecty=acry-5
     acrrectw=acrrectx + acrw
-    acrrecth=acry + acrh-24
+    acrrecth=acry + acrh-22
     outputpoint[1][5]=getpoint("a","L_8k",grayimage.copy(),wpath,acrrectx,acrrecty,acrrectw,acrrecth)
+    print("bcL555=",outputpoint[1][5])
 
 
     # identify 4row or 2row data
@@ -406,23 +413,37 @@ def convert4Points(pdffilename,path):
     # bcR 250 data
     acrrectx=acrx+180
     acrrecty=acry+buffery
-    acrrectw=acrrectx + acrw+25
+    acrrectw=acrrectx + acrw+20
     acrrecth=acrrecty +acrh-18
     outputpoint[2][0]=getpoint("b","R_250",grayimage.copy(),wpath,acrrectx,acrrecty,acrrectw,acrrecth)
-
+    # print("bcr=",outputpoint[2][0])
     # bcR 500 data
     acrrectx=acrx+235
-    acrrecty=acry+buffery
+    acrrecty=acry+buffery-5
     acrrectw=acrrectx + acrw
-    acrrecth=acrrecty +acrh-20
+    acrrecth=acrrecty +acrh-20+5
     outputpoint[2][1]=getpoint("b","R_500",grayimage.copy(),wpath,acrrectx,acrrecty,acrrectw,acrrecth)
+    print("bcr11=",outputpoint[2][1])
 
+    if (outputpoint[2][1] <10 and outputpoint[2][1]!=5) or outputpoint[2][1]==0 :
+        acrrecty=acrrecty-3
+        acrrecth=acrrecth+3
+        outputpoint[2][1]=getpoint("b","R_500",grayimage1.copy(),wpath,acrrectx,acrrecty,acrrectw,acrrecth)
+        print("bcr111=",outputpoint[2][1])
     # bcR 1k data
     acrrectx=acrx+325
-    acrrecty=acry+buffery
+    acrrecty=acry+buffery-2
     acrrectw=acrrectx + acrw
-    acrrecth=acrrecty +acrh-20
+    acrrecth=acrrecty +acrh-18
     outputpoint[2][2]=getpoint("b","R_1k",grayimage.copy(),wpath,acrrectx,acrrecty,acrrectw,acrrecth)
+    print("bcr115=",outputpoint[2][2])
+    if (outputpoint[2][2] <10 and outputpoint[2][2]!=5) or  outputpoint[2][2]==0 or (outputpoint[2][2] %5 !=0 and outputpoint[2][2]>9):
+            acrrectx=acrx+325
+            acrrecty=acry+buffery
+            acrrectw=acrrectx + acrw
+            acrrecth=acrrecty +acrh-20
+            outputpoint[2][2]=getpoint("b","R_1k",grayimage1.copy(),wpath,acrrectx,acrrecty,acrrectw,acrrecth)
+            print("bcr1115=",outputpoint[2][2])
 
     # bcR 2k data
     acrrectx=acrx+415
@@ -431,14 +452,13 @@ def convert4Points(pdffilename,path):
     acrrecth=acrrecty +acrh-20
     outputpoint[2][3]=getpoint("b","R_2k",grayimage.copy(),wpath,acrrectx,acrrecty,acrrectw,acrrecth)
 
-
     # bcR 4k data
     acrrectx=acrx+505
-    acrrecty=acry+buffery
+    acrrecty=acry+buffery-3
     acrrectw=acrrectx + acrw
-    acrrecth=acrrecty +acrh-24
+    acrrecth=acrrecty +acrh-20
     outputpoint[2][4]=getpoint("b","R_4k",grayimage.copy(),wpath,acrrectx,acrrecty,acrrectw,acrrecth)
-
+    print("bcr114=",outputpoint[2][4])
     # bcR 8k data
     acrrectx=acrx+595
     acrrecty=acry+buffery
@@ -449,13 +469,22 @@ def convert4Points(pdffilename,path):
 
     # bcL 250 data
     acrrectx=acrx+1120
-    acrrecty=acry+buffery
+    acrrecty=acry+buffery-2
     acrrectw=acrrectx + acrw
     acrrecth=acrrecty +acrh-20
     outputpoint[3][0]=getpoint("b","L_250",grayimage.copy(),wpath,acrrectx,acrrecty,acrrectw,acrrecth)
+    print("bcr300=",outputpoint[3][0])
 
+    if (outputpoint[3][0] <10 and outputpoint[3][0]!=5) or outputpoint[3][0]==0 :
+            acrrectx=acrx+1120
+            acrrecty=acry+buffery-3
+            acrrectw=acrrectx + acrw
+            acrrecth=acrrecty +acrh-18
+            outputpoint[3][0]=getpoint("b","L_250",grayimage1.copy(),wpath,acrrectx,acrrecty,acrrectw,acrrecth)
+            print("bcr300=",outputpoint[3][0])
 
-    # bcL 500 data
+    # bcL 500 dataBG BNUSFD
+    
     acrrectx=acrx+1165
     acrrecty=acry+buffery
     acrrectw=acrrectx + acrw
@@ -476,6 +505,14 @@ def convert4Points(pdffilename,path):
     acrrectw=acrrectx + acrw
     acrrecth=acrrecty +acrh-20
     outputpoint[3][3]=getpoint("b","L_2k",grayimage.copy(),wpath,acrrectx,acrrecty,acrrectw,acrrecth)
+
+    if (outputpoint[3][3] <10 and outputpoint[3][3]!=5) or outputpoint[3][3]==0 :
+        acrrectx=acrx+1345
+        acrrecty=acry+buffery
+        acrrectw=acrrectx + acrw
+        acrrecth=acrrecty +acrh-20
+        outputpoint[3][3]=getpoint("b","L_2k",grayimage1.copy(),wpath,acrrectx,acrrecty,acrrectw,acrrecth)
+
 
     # bcL 4K data
     acrrectx=acrx+1435
